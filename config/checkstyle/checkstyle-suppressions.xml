@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE suppressions PUBLIC
+        "-//Puppy Crawl//DTD Suppressions 1.1//EN"
+        "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
+
+<suppressions>
+    <!-- suppressing checks in real classes -->
+    <suppress checks="ParameterNumber|ClassFanOutComplexity|CyclomaticComplexity|JavaNCSS|NPathComplexity" files="Test.java"/>
+
+    <!-- suppressing checks in Cloudbreak-shell -->
+    <suppress id="sysout" files="Test.java" />
+    <suppress id="printTrace" files="Test.java|" />
+
+    <suppress id="sysout" files="Test.java"/>
+
+</suppressions>

@@ -1,0 +1,76 @@
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'checkstyle'
+
+group = 'com.hortonworks'
+
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+}
+repositories {
+  mavenCentral()
+  maven { url "http://maven.sequenceiq.com/snapshots" }
+  maven { url "http://maven.sequenceiq.com/release" }
+}
+
+configurations {
+  deployerJars
+  all*.exclude group: 'com.google.guava', module: 'guava-jdk5'
+}
+
+jar {
+  baseName = 'ambari-consul-bridge'
+  manifest {
+    attributes(
+            'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+            'Main-Class': 'com.hortonworks.bridge.Test'
+    )
+  }
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      configuration = configurations.deployerJars
+      repository(url: "s3://maven.sequenceiq.com/releases") {
+        authentication(userName: "$System.env.AWS_ACCESS_KEY", passphrase: "$System.env.AWS_SECRET_ACCESS_KEY")
+      }
+      snapshotRepository(url: "s3://maven.sequenceiq.com/snapshots") {
+        authentication(userName: "$System.env.AWS_ACCESS_KEY", passphrase: "$System.env.AWS_SECRET_ACCESS_KEY")
+      }
+    }
+  }
+}
+
+checkstyle {
+  toolVersion = "6.0"
+}
+
+checkstyleMain {
+  ignoreFailures = false
+  configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+  configProperties = ['config_loc': "$rootDir/config/checkstyle"]
+}
+
+checkstyleTest {
+  ignoreFailures = false
+  configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+  configProperties = ['config_loc': "$rootDir/config/checkstyle"]
+}
+
+dependencies {
+  checkstyle('com.puppycrawl.tools:checkstyle:6.11.1') {
+    exclude group: 'com.google.guava'
+  }
+  checkstyle("com.google.guava:guava:19.0") { force = true }
+
+}
+
+task wrapper(type: Wrapper) { gradleVersion = "2.3" }
