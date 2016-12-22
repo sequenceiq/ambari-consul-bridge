@@ -1,11 +1,10 @@
-package org.apache.ambari;
+package org.apache.ambari.server;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import org.apache.ambari.server.EagerSingleton;
 import org.apache.ambari.server.events.ServiceEvent;
 import org.apache.ambari.server.events.publishers.AmbariEventPublisher;
 import org.slf4j.Logger;

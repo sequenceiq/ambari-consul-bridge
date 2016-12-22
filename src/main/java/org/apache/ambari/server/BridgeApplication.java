@@ -1,4 +1,4 @@
-package org.apache.ambari;
+package org.apache.ambari.server;
 
 public class BridgeApplication {
 

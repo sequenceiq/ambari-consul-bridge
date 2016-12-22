@@ -13,7 +13,7 @@ sourceCompatibility = 1.8
 group = 'org.apache'
 
 jar {
-  baseName = 'ambari-consul-ambari'
+  baseName = 'ambari-consul-bridge'
 }
 
 configurations {
