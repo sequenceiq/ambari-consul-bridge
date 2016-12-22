@@ -1,39 +1,25 @@
-apply plugin: 'idea'
-apply plugin: 'eclipse'
-apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'checkstyle'
-
-group = 'com.hortonworks'
-
 buildscript {
   repositories {
     mavenCentral()
   }
 }
-repositories {
-  mavenCentral()
-  maven { url "http://maven.sequenceiq.com/snapshots" }
-  maven { url "http://maven.sequenceiq.com/release" }
+
+apply plugin: 'groovy'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'maven'
+
+sourceCompatibility = 1.8
+group = 'org.apache'
+
+jar {
+  baseName = 'ambari-consul-ambari'
 }
 
 configurations {
   deployerJars
-  all*.exclude group: 'com.google.guava', module: 'guava-jdk5'
+  all*.exclude group: 'org.slf4j', module: 'slf4j-log4j12'
 }
-
-jar {
-  baseName = 'ambari-consul-bridge'
-  manifest {
-    attributes(
-            'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
-            'Main-Class': 'com.hortonworks.bridge.Test'
-    )
-  }
-}
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
 
 uploadArchives {
   repositories {
@@ -49,28 +35,64 @@ uploadArchives {
   }
 }
 
-checkstyle {
-  toolVersion = "6.0"
-}
-
-checkstyleMain {
-  ignoreFailures = false
-  configFile = rootProject.file('config/checkstyle/checkstyle.xml')
-  configProperties = ['config_loc': "$rootDir/config/checkstyle"]
-}
-
-checkstyleTest {
-  ignoreFailures = false
-  configFile = rootProject.file('config/checkstyle/checkstyle.xml')
-  configProperties = ['config_loc': "$rootDir/config/checkstyle"]
+repositories {
+  mavenLocal()
+  mavenCentral()
+  maven { url "http://maven.sequenceiq.com/snapshots" }
+  maven { url "http://maven.sequenceiq.com/release" }
 }
 
 dependencies {
-  checkstyle('com.puppycrawl.tools:checkstyle:6.11.1') {
-    exclude group: 'com.google.guava'
+  compile ('org.apache.ambari:ambari-server:2.0.0.0-SNAPSHOT') {
+    exclude group: 'org.apache.ambari', module: 'ambari-server'
   }
-  checkstyle("com.google.guava:guava:19.0") { force = true }
+  compile 'com.google.inject:guice:4.1.0'
+  compile 'org.slf4j:slf4j-api:1.7.12'
 
 }
 
 task wrapper(type: Wrapper) { gradleVersion = "2.3" }
+
+task buildInfo(type: BuildInfoTask) {
+  destination = file("$buildDir")
+  applicationPropertiesPath = "$buildDir"
+  basename = jar.baseName
+  buildVersion = version
+}
+
+compileJava.dependsOn buildInfo
+
+task sourcesJar(type: Jar, dependsOn:classes) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+artifacts {
+  archives sourcesJar
+}
+
+class BuildInfoTask extends DefaultTask {
+  File destination = new File("build.info")
+  String applicationPropertiesPath
+  String basename
+  String buildVersion
+
+  @TaskAction
+  def writeBuildInfo() {
+    destination.mkdirs()
+    File applicationDestination = new File(applicationPropertiesPath + "/resources/main")
+    applicationDestination.mkdirs()
+    new File(destination, "build.info").withWriter { out ->
+      [
+              "ARTIFACT_BASENAME=" + basename,
+              "ARTIFACT_VERSION=" + buildVersion,
+      ].each { out.println it }
+    }
+    new File(applicationDestination, "application.properties").withWriter { out ->
+      [
+              "info.app.name=" + basename,
+              "info.app.version=" + buildVersion
+      ].each { out.println it }
+    }
+  }
+}

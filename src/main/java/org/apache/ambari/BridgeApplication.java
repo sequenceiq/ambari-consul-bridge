@@ -1,4 +1,4 @@
-package com.hortonworks.bridge;
+package org.apache.ambari;
 
 public class BridgeApplication {
 
