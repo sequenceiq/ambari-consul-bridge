@@ -13,7 +13,7 @@ public class ConsulListenerTest {
     @Test
     public void testServiceCreate() {
         ServiceComponentInstalledEvent serviceComponentInstalledEvent =
-                new ServiceComponentInstalledEvent(1l, "ricsitest", "2.5", "HDFS_CLIENT", "HDFS", "alma123-123-123.alma.com", false);
+                new ServiceComponentInstalledEvent(1l, "ricsitest", "2.5", "HDFS_CLIENT123", "HDFS", "alma123-123-123.alma.com", false);
 
         consulListener.onServiceComponentEvent(serviceComponentInstalledEvent);
     }

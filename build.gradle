@@ -4,10 +4,12 @@ buildscript {
   }
 }
 
-apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'maven'
+apply plugin: 'java'
+apply plugin: 'application'
+
 
 sourceCompatibility = 1.8
 group = 'org.apache'
@@ -48,7 +50,12 @@ dependencies {
   }
   compile 'com.google.inject:guice:4.1.0'
   compile 'org.slf4j:slf4j-api:1.7.12'
-  compile 'com.sequenceiq:consul-api:1.10'
+  compile "com.google.code.gson:gson:2.3"
+
+  compile "org.apache.httpcomponents:httpcore:4.3.1"
+  compile "org.apache.httpcomponents:httpclient:4.3.1"
+  compile "org.bouncycastle:bcpkix-jdk15on:1.51"
+
   testCompile 'junit:junit:4.12'
 
 }
@@ -63,6 +70,7 @@ task buildInfo(type: BuildInfoTask) {
 }
 
 compileJava.dependsOn buildInfo
+mainClassName = "org.apache.ambari.server.BridgeApplication"
 
 task sourcesJar(type: Jar, dependsOn:classes) {
   classifier = 'sources'
@@ -71,6 +79,16 @@ task sourcesJar(type: Jar, dependsOn:classes) {
 
 artifacts {
   archives sourcesJar
+}
+
+jar {
+  manifest {
+    attributes "Main-Class": "org.apache.ambari.server.BridgeApplication"
+  }
+
+  from {
+    configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+  }
 }
 
 class BuildInfoTask extends DefaultTask {
