@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
 
-import org.apache.ambari.server.ecwid.consul.transport.TLSConfig;
 import org.apache.ambari.server.events.AmbariEvent;
 import org.apache.ambari.server.events.ClusterEvent;
 import org.apache.ambari.server.events.ServiceComponentInstalledEvent;
@@ -15,9 +14,9 @@ import org.apache.ambari.server.events.publishers.AmbariEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.ambari.server.ecwid.consul.v1.ConsulClient;
-import org.apache.ambari.server.ecwid.consul.v1.agent.model.NewService;
-
+import com.ecwid.consul.transport.TLSConfig;
+import com.ecwid.consul.v1.ConsulClient;
+import com.ecwid.consul.v1.agent.model.NewService;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;

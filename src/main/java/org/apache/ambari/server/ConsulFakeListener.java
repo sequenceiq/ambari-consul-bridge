@@ -2,9 +2,10 @@ package org.apache.ambari.server;
 
 import java.util.Date;
 
-import org.apache.ambari.server.ecwid.consul.transport.TLSConfig;
-import org.apache.ambari.server.ecwid.consul.v1.ConsulClient;
-import org.apache.ambari.server.ecwid.consul.v1.agent.model.NewService;
+import com.ecwid.consul.transport.TLSConfig;
+import com.ecwid.consul.v1.ConsulClient;
+import com.ecwid.consul.v1.agent.model.NewService;
+
 
 public class ConsulFakeListener {
 
