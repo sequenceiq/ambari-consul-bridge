@@ -6,6 +6,9 @@ public class BridgeApplication {
     }
 
     public static void main(String[] args) {
+
+        ConsulFakeListener consulFakeListener = new ConsulFakeListener();
+        consulFakeListener.renameServiceEvent();
         System.out.println("Ambari Consul Bridge");
     }
 }

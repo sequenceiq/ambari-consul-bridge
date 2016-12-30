@@ -1,47 +1,42 @@
 buildscript {
   repositories {
-    mavenCentral()
+    jcenter()
+  }
+
+  dependencies {
+    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
   }
 }
 
-apply plugin: 'eclipse'
-apply plugin: 'idea'
-apply plugin: 'maven'
 apply plugin: 'java'
-apply plugin: 'application'
-
+apply plugin: 'eclipse'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 sourceCompatibility = 1.8
-group = 'org.apache'
-
-jar {
-  baseName = 'ambari-consul-bridge'
-}
+version = '1.0'
 
 configurations {
-  deployerJars
-  all*.exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+  runtime.exclude group: "org.apache.ambari", module: "ambari-server"
 }
 
-uploadArchives {
-  repositories {
-    mavenDeployer {
-      configuration = configurations.deployerJars
-      repository(url: "s3://maven.sequenceiq.com/releases") {
-        authentication(userName: "$System.env.AWS_ACCESS_KEY", passphrase: "$System.env.AWS_SECRET_ACCESS_KEY")
-      }
-      snapshotRepository(url: "s3://maven.sequenceiq.com/snapshots") {
-        authentication(userName: "$System.env.AWS_ACCESS_KEY", passphrase: "$System.env.AWS_SECRET_ACCESS_KEY")
-      }
-    }
+jar {
+  manifest.attributes provider: 'gradle'
+  manifest {
+    attributes  'Implementation-Title': 'Gradle Quickstart',
+            'Implementation-Version': version,
+            'Main-Class': 'org.apache.ambari.server.BridgeApplication'
   }
+}
+
+shadowJar {
+  baseName = project.name + '-shadow'
+  classifier = null
+  version = null
 }
 
 repositories {
   mavenLocal()
   mavenCentral()
-  maven { url "http://maven.sequenceiq.com/snapshots" }
-  maven { url "http://maven.sequenceiq.com/releases" }
 }
 
 dependencies {
@@ -57,62 +52,18 @@ dependencies {
   compile "org.bouncycastle:bcpkix-jdk15on:1.51"
 
   testCompile 'junit:junit:4.12'
+}
 
+test {
+  systemProperties 'property': 'value'
+}
+
+uploadArchives {
+  repositories {
+    flatDir {
+      dirs 'repos'
+    }
+  }
 }
 
 task wrapper(type: Wrapper) { gradleVersion = "2.3" }
-
-task buildInfo(type: BuildInfoTask) {
-  destination = file("$buildDir")
-  applicationPropertiesPath = "$buildDir"
-  basename = jar.baseName
-  buildVersion = version
-}
-
-compileJava.dependsOn buildInfo
-mainClassName = "org.apache.ambari.server.BridgeApplication"
-
-task sourcesJar(type: Jar, dependsOn:classes) {
-  classifier = 'sources'
-  from sourceSets.main.allSource
-}
-
-artifacts {
-  archives sourcesJar
-}
-
-jar {
-  manifest {
-    attributes "Main-Class": "org.apache.ambari.server.BridgeApplication"
-  }
-
-  from {
-    configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-  }
-}
-
-class BuildInfoTask extends DefaultTask {
-  File destination = new File("build.info")
-  String applicationPropertiesPath
-  String basename
-  String buildVersion
-
-  @TaskAction
-  def writeBuildInfo() {
-    destination.mkdirs()
-    File applicationDestination = new File(applicationPropertiesPath + "/resources/main")
-    applicationDestination.mkdirs()
-    new File(destination, "build.info").withWriter { out ->
-      [
-              "ARTIFACT_BASENAME=" + basename,
-              "ARTIFACT_VERSION=" + buildVersion,
-      ].each { out.println it }
-    }
-    new File(applicationDestination, "application.properties").withWriter { out ->
-      [
-              "info.app.name=" + basename,
-              "info.app.version=" + buildVersion
-      ].each { out.println it }
-    }
-  }
-}

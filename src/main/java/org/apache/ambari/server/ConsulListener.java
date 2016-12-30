@@ -29,7 +29,7 @@ import com.google.inject.Singleton;
 public class ConsulListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConsulListener.class);
-    private static final String CONSUL_ADDRESS = "192.168.59.103";
+    private static final String CONSUL_ADDRESS = "localhost";
     private static final Integer CONSUL_PORT = 8500;
 
     @Inject

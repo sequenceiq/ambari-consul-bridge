@@ -1,8 +1,5 @@
 package org.apache.ambari.server.ecwid.consul.v1;
 
-import org.apache.ambari.server.ConsulListener;
-import org.apache.http.client.HttpClient;
-
 import org.apache.ambari.server.ecwid.consul.UrlParameters;
 import org.apache.ambari.server.ecwid.consul.Utils;
 import org.apache.ambari.server.ecwid.consul.transport.DefaultHttpTransport;
@@ -10,14 +7,12 @@ import org.apache.ambari.server.ecwid.consul.transport.DefaultHttpsTransport;
 import org.apache.ambari.server.ecwid.consul.transport.HttpTransport;
 import org.apache.ambari.server.ecwid.consul.transport.RawResponse;
 import org.apache.ambari.server.ecwid.consul.transport.TLSConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.http.client.HttpClient;
 
 /**
  * @author Vasily Vasilkov (vgv@ecwid.com)
  */
 public class ConsulRawClient {
-    private static final Logger LOG = LoggerFactory.getLogger(ConsulListener.class);
 	private static final String DEFAULT_HOST = "localhost";
 	private static final int DEFAULT_PORT = 8500;
 
@@ -75,7 +70,6 @@ public class ConsulRawClient {
 		}
 
 		this.agentAddress = agentHost + ":" + agentPort;
-        LOG.info("AgenAddress: " + this.agentAddress);
 	}
 
 	public RawResponse makeGetRequest(String endpoint, UrlParameters... urlParams) {
