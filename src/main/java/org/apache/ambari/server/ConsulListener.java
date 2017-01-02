@@ -2,7 +2,6 @@ package org.apache.ambari.server;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
 
@@ -14,7 +13,6 @@ import org.apache.ambari.server.events.publishers.AmbariEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ecwid.consul.transport.TLSConfig;
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.agent.model.NewService;
 import com.google.common.eventbus.AllowConcurrentEvents;
@@ -52,11 +50,11 @@ public class ConsulListener {
         try(FileWriter fw = new FileWriter("/tmp/consulevents", true);
             BufferedWriter bw = new BufferedWriter(fw); PrintWriter out = new PrintWriter(bw)) {
             out.println(event.toString());
-        } catch (IOException e) {
+        } catch (Throwable ex) {
             LOG.info("///////////////////////////////////");
             LOG.info("//FAILED TO REGISTER NEW SERVICE///");
             LOG.info("///////////////////////////////////");
-            LOG.info(e.getMessage());
+            LOG.error(ex.getMessage(), ex);
         }
 
     }
@@ -74,11 +72,11 @@ public class ConsulListener {
         try(FileWriter fw = new FileWriter("/tmp/consulevents", true);
             BufferedWriter bw = new BufferedWriter(fw); PrintWriter out = new PrintWriter(bw)) {
             out.println(event.toString());
-        } catch (IOException e) {
+        } catch (Throwable ex) {
             LOG.info("///////////////////////////////////");
             LOG.info("//FAILED TO REGISTER NEW SERVICE///");
             LOG.info("///////////////////////////////////");
-            LOG.info(e.getMessage());
+            LOG.error(ex.getMessage(), ex);
         }
     }
 
@@ -108,16 +106,12 @@ public class ConsulListener {
             LOG.info("Register new service to Consul: ", newService);
             consulClient.agentServiceRegister(newService);
             LOG.info("Successfully registered ne service to Consul.");
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             LOG.info("///////////////////////////////////");
             LOG.info("//FAILED TO REGISTER NEW SERVICE///");
             LOG.info("///////////////////////////////////");
-            LOG.info(ex.getMessage());
+            LOG.error(ex.getMessage(), ex);
         }
-    }
-
-    public static ConsulClient createClient(String host, TLSConfig tlsConfig) {
-        return new ConsulClient(host, tlsConfig);
     }
 
     public static ConsulClient createClient(String apiAddress, int apiPort) {

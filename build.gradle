@@ -37,13 +37,15 @@ shadowJar {
 repositories {
   mavenLocal()
   mavenCentral()
+  maven { url "http://maven.sequenceiq.com/releases" }
+
 }
 
 dependencies {
   compile ('org.apache.ambari:ambari-server:2.0.0.0-SNAPSHOT') {
     exclude group: 'org.apache.ambari', module: 'ambari-server'
   }
-  compile 'com.ecwid.consul:consul-api:1.2.1'
+  compile 'com.sequenceiq:consul-api:1.10-down'
   compile 'com.google.inject:guice:4.1.0'
   compile 'org.slf4j:slf4j-api:1.7.12'
   compile "com.google.code.gson:gson:2.3"

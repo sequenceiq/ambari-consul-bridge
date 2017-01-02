@@ -2,7 +2,6 @@ package org.apache.ambari.server;
 
 import java.util.Date;
 
-import com.ecwid.consul.transport.TLSConfig;
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.agent.model.NewService;
 
@@ -32,16 +31,12 @@ public class ConsulFakeListener {
             System.out.println("Register new service to Consul: " +  newService);
             consulClient.agentServiceRegister(newService);
             System.out.println("Successfully registered ne service to Consul.");
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             System.out.println("///////////////////////////////////");
             System.out.println("//FAILED TO REGISTER NEW SERVICE///");
             System.out.println("///////////////////////////////////");
             System.out.println(ex.getMessage());
         }
-    }
-
-    public static ConsulClient createClient(String host, TLSConfig tlsConfig) {
-        return new ConsulClient(host, tlsConfig);
     }
 
     public static ConsulClient createClient(String apiAddress, int apiPort) {
