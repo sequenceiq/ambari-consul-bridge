@@ -3,6 +3,7 @@ package org.apache.ambari.server;
 import java.util.Date;
 
 import org.apache.ambari.server.events.ServiceComponentInstalledEvent;
+import org.apache.ambari.server.events.ServiceComponentUninstalledEvent;
 import org.apache.ambari.server.events.publishers.AmbariEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +32,24 @@ public class ConsulListener {
 
     @Subscribe
     @AllowConcurrentEvents
-    public void onServiceComponentEvent(ServiceComponentInstalledEvent event) {
+    public void onServiceComponentInstalledEvent(ServiceComponentInstalledEvent event) {
         if(LOG.isDebugEnabled()) {
             LOG.debug(event.toString());
         }
         LOG.info("registerServiceIntoConsul -> ServiceComponentInstalledEvent: ", event.toString());
-        registerServiceIntoConsul(event.getServiceName().toLowerCase(), event.getHostName(), null);
+
+        registerServiceIntoConsul(event.getComponentName().toLowerCase(), event.getHostName(), null);
+    }
+
+    @Subscribe
+    @AllowConcurrentEvents
+    public void onServiceComponentUnInstalledEvent(ServiceComponentUninstalledEvent event) {
+        if(LOG.isDebugEnabled()) {
+            LOG.debug(event.toString());
+        }
+        LOG.info("deregisterServiceIntoConsul -> ServiceComponentUninstalledEvent: ", event.toString());
+
+        deregisterServiceIntoConsul(event.getComponentName().toLowerCase(), event.getHostName(), null);
     }
 
     private void registerServiceIntoConsul(String serviceName, String hostName, Integer port) {
@@ -55,6 +68,17 @@ public class ConsulListener {
             LOG.info("Register new service to Consul: ", newService);
             consulClient.agentServiceRegister(newService);
             LOG.info("Successfully registered ne service to Consul.");
+        } catch (Throwable ex) {
+            LOG.error(ex.getMessage(), ex);
+        }
+    }
+
+    private void deregisterServiceIntoConsul(String serviceName, String hostName, Integer port) {
+        try {
+            LOG.info("registerServiceIntoConsul -> Connecting to Consul because new event arrived.");
+            ConsulClient consulClient = createClient(CONSUL_ADDRESS, CONSUL_PORT);
+            LOG.info("Successfully connected to Consul.");
+            LOG.info("Deregistered is currently not implemented.");
         } catch (Throwable ex) {
             LOG.error(ex.getMessage(), ex);
         }
