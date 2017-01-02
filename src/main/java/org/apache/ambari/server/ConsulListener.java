@@ -1,6 +1,7 @@
 package org.apache.ambari.server;
 
 import java.util.Date;
+import java.util.Map;
 
 import org.apache.ambari.server.events.ServiceComponentInstalledEvent;
 import org.apache.ambari.server.events.ServiceComponentUninstalledEvent;
@@ -9,7 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ecwid.consul.v1.ConsulClient;
+import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.agent.model.NewService;
+import com.ecwid.consul.v1.agent.model.Service;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
@@ -52,36 +55,49 @@ public class ConsulListener {
         deregisterServiceIntoConsul(event.getComponentName().toLowerCase(), event.getHostName(), null);
     }
 
-    private void registerServiceIntoConsul(String serviceName, String hostName, Integer port) {
+    private void registerServiceIntoConsul(String componentName, String hostName, Integer port) {
         try {
             LOG.info("registerServiceIntoConsul -> Connecting to Consul because new event arrived.");
             ConsulClient consulClient = createClient(CONSUL_ADDRESS, CONSUL_PORT);
             LOG.info("Successfully connected to Consul.");
             NewService newService = new NewService();
-            if (serviceName != null) {
-                newService.setName(serviceName + ".service.consul");
+            if (componentName != null) {
+                newService.setName(componentName(componentName));
             } else {
-                newService.setName(((int) new Date().getTime() % 65000) + ".service.consul");
+                newService.setName(((int) new Date().getTime() % 65000) + "");
             }
             newService.setAddress(hostName);
             newService.setPort(port == null ? (int) new Date().getTime() % 65000 : port);
             LOG.info("Register new service to Consul: ", newService);
             consulClient.agentServiceRegister(newService);
-            LOG.info("Successfully registered ne service to Consul.");
+            LOG.info("Successfully registered new service to Consul.");
         } catch (Throwable ex) {
             LOG.error(ex.getMessage(), ex);
         }
     }
 
-    private void deregisterServiceIntoConsul(String serviceName, String hostName, Integer port) {
+    private void deregisterServiceIntoConsul(String componentName, String hostName, Integer port) {
         try {
             LOG.info("registerServiceIntoConsul -> Connecting to Consul because new event arrived.");
             ConsulClient consulClient = createClient(CONSUL_ADDRESS, CONSUL_PORT);
             LOG.info("Successfully connected to Consul.");
+            Response<Map<String, Service>> agentServices = consulClient.getAgentServices();
+            for (Map.Entry<String, Service> stringServiceEntry : agentServices.getValue().entrySet()) {
+                Service value = stringServiceEntry.getValue();
+                String validComponentName = componentName(componentName);
+                if (value.getAddress().equals(hostName) && value.getService().equals(validComponentName)) {
+                    LOG.info("Deregistered service with id: ", value.getId());
+                    consulClient.agentServiceDeregister(value.getId());
+                }
+            }
             LOG.info("Deregistered is currently not implemented.");
         } catch (Throwable ex) {
             LOG.error(ex.getMessage(), ex);
         }
+    }
+
+    private String componentName(String componentName) {
+        return componentName.toLowerCase().replaceAll("_", "-");
     }
 
     public static ConsulClient createClient(String apiAddress, int apiPort) {
