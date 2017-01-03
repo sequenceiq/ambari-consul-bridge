@@ -41,7 +41,7 @@ public class ConsulListener {
         }
         LOG.info("registerServiceIntoConsul -> ServiceComponentInstalledEvent: ", event.toString());
 
-        registerServiceIntoConsul(event.getComponentName().toLowerCase(), event.getHostName(), null);
+        registerServiceIntoConsul(event.getComponentName().toLowerCase(), event.getHostName());
     }
 
     @Subscribe
@@ -52,10 +52,10 @@ public class ConsulListener {
         }
         LOG.info("deregisterServiceIntoConsul -> ServiceComponentUninstalledEvent: ", event.toString());
 
-        deregisterServiceIntoConsul(event.getComponentName().toLowerCase(), event.getHostName(), null);
+        deregisterServiceIntoConsul(event.getComponentName().toLowerCase(), event.getHostName());
     }
 
-    private void registerServiceIntoConsul(String componentName, String hostName, Integer port) {
+    private void registerServiceIntoConsul(String componentName, String hostName) {
         try {
             LOG.info("registerServiceIntoConsul -> Connecting to Consul because new event arrived.");
             ConsulClient consulClient = createClient(CONSUL_ADDRESS, CONSUL_PORT);
@@ -67,7 +67,7 @@ public class ConsulListener {
                 newService.setName(((int) new Date().getTime() % 65000) + "");
             }
             newService.setAddress(hostName);
-            newService.setPort(port == null ? (int) new Date().getTime() % 65000 : port);
+            newService.setPort(443);
             LOG.info("Register new service to Consul: ", newService);
             consulClient.agentServiceRegister(newService);
             LOG.info("Successfully registered new service to Consul.");
@@ -76,7 +76,7 @@ public class ConsulListener {
         }
     }
 
-    private void deregisterServiceIntoConsul(String componentName, String hostName, Integer port) {
+    private void deregisterServiceIntoConsul(String componentName, String hostName) {
         try {
             LOG.info("registerServiceIntoConsul -> Connecting to Consul because new event arrived.");
             ConsulClient consulClient = createClient(CONSUL_ADDRESS, CONSUL_PORT);
