@@ -10,12 +10,18 @@ buildscript {
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'maven'
 apply plugin: 'com.github.johnrengelman.shadow'
 
+allprojects {
+  ext.config = new ConfigSlurper('jenkins').parse(file("$rootDir/gradle/config/buildConfig.groovy").toURL())
+}
+
 sourceCompatibility = 1.8
-version = '1.0'
+version = '0.0.1'
 
 configurations {
+  deployerJars
   runtime.exclude group: "org.apache.ambari", module: "ambari-server"
 }
 
@@ -27,11 +33,17 @@ jar {
             'Main-Class': 'org.apache.ambari.server.BridgeApplication'
   }
 }
+group = 'org.apache'
 
 shadowJar {
   baseName = project.name + '-shadow'
+  group = 'org.apache'
   classifier = null
-  version = null
+  version = '0.0.1'
+}
+
+artifacts {
+  archives shadowJar
 }
 
 repositories {
@@ -55,18 +67,27 @@ dependencies {
   compile "org.bouncycastle:bcpkix-jdk15on:1.51"
 
   testCompile 'junit:junit:4.12'
+  deployerJars 'org.springframework.build.aws:org.springframework.build.aws.maven:3.0.0.RELEASE'
+
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      configuration = configurations.deployerJars
+      repository(url: "s3://maven.sequenceiq.com/releases") {
+        authentication(userName: "$System.env.AWS_ACCESS_KEY", passphrase: "$System.env.AWS_SECRET_ACCESS_KEY")
+      }
+      snapshotRepository(url: "s3://maven.sequenceiq.com/snapshots") {
+        authentication(userName: "$System.env.AWS_ACCESS_KEY", passphrase: "$System.env.AWS_SECRET_ACCESS_KEY")
+      }
+    }
+  }
 }
 
 test {
   systemProperties 'property': 'value'
 }
 
-uploadArchives {
-  repositories {
-    flatDir {
-      dirs 'repos'
-    }
-  }
-}
 
 task wrapper(type: Wrapper) { gradleVersion = "2.3" }
