@@ -1,5 +1,6 @@
 package org.apache.ambari.server;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 
@@ -62,10 +63,12 @@ public class ConsulListener {
             LOG.info("Successfully connected to Consul.");
             NewService newService = new NewService();
             if (componentName != null) {
-                newService.setName(componentName(componentName, hostName));
+                newService.setName(componentName(componentName));
             } else {
                 newService.setName(((int) new Date().getTime() % 65000) + "");
             }
+            newService.setTags(Arrays.asList("installed"));
+            newService.setId(id(componentName, hostName));
             newService.setAddress(hostName);
             newService.setPort(443);
             LOG.info("Register new service to Consul: ", newService);
@@ -84,8 +87,8 @@ public class ConsulListener {
             Response<Map<String, Service>> agentServices = consulClient.getAgentServices();
             for (Map.Entry<String, Service> stringServiceEntry : agentServices.getValue().entrySet()) {
                 Service value = stringServiceEntry.getValue();
-                String validComponentName = componentName(componentName, hostName);
-                if (value.getAddress().equals(hostName) && value.getService().equals(validComponentName)) {
+                String validId = id(componentName, hostName);
+                if (value.getAddress().equals(hostName) && value.getId().equals(validId)) {
                     LOG.info("Deregistered service with id: ", value.getId());
                     consulClient.agentServiceDeregister(value.getId());
                 }
@@ -96,8 +99,12 @@ public class ConsulListener {
         }
     }
 
-    public String componentName(String componentName, String hostname) {
+    public String id(String componentName, String hostname) {
         return componentName.toLowerCase().replaceAll("_", "-") + "." + hostname.split("\\.")[0].toLowerCase().replaceAll("_", "-");
+    }
+
+    public String componentName(String componentName) {
+        return componentName.toLowerCase().replaceAll("_", "-");
     }
 
     public static ConsulClient createClient(String apiAddress, int apiPort) {
