@@ -70,7 +70,7 @@ public class ConsulListener {
             newService.setTags(Arrays.asList("installed"));
             newService.setId(id(componentName, hostName));
             newService.setAddress(hostName);
-            newService.setPort(443);
+            newService.setPort(1080);
             LOG.info("Register new service to Consul: ", newService);
             consulClient.agentServiceRegister(newService);
             LOG.info("Successfully registered new service to Consul.");
